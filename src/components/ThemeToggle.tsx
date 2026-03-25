@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { useTheme } from "@/context/ThemeContext"
+import { useTheme } from "@/context/useTheme"
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
@@ -21,13 +21,8 @@ export function ThemeToggle() {
         exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        {theme === "dark" ? (
-          <Sun className="h-5 w-5" />
-        ) : (
-          <Moon className="h-5 w-5" />
-        )}
+        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       </motion.div>
     </Button>
   )
 }
-

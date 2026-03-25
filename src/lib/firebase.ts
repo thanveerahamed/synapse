@@ -1,9 +1,5 @@
 import { initializeApp } from "firebase/app"
-import {
-  getAuth,
-  browserLocalPersistence,
-  setPersistence,
-} from "firebase/auth"
+import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
 const firebaseConfig = {
@@ -25,4 +21,3 @@ setPersistence(auth, browserLocalPersistence)
 export const db = getFirestore(app)
 
 export default app
-

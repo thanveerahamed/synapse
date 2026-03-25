@@ -1,5 +1,5 @@
 import { Navigate } from "react-router"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/context/useAuth"
 import { SplashScreen } from "@/components/SplashScreen"
 import { AnimatePresence } from "framer-motion"
 import type { ReactNode } from "react"
@@ -47,4 +47,3 @@ export function GuestRoute({ children }: { children: ReactNode }) {
 
   return <>{children}</>
 }
-

@@ -1,28 +1,13 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react"
-
-type Theme = "dark" | "light"
-
-interface ThemeContextValue {
-  theme: Theme
-  toggleTheme: () => void
-  setTheme: (theme: Theme) => void
-}
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
+import { ThemeContext, type Theme } from "./ThemeContextDef"
 
 const STORAGE_KEY = "synapse-theme"
 
 function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark"
+  if (typeof globalThis.window === "undefined") return "dark"
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === "light" || stored === "dark") return stored
-  return "dark" // default to dark
+  return "dark"
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -35,21 +20,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, theme)
   }, [theme])
 
-  const toggleTheme = () =>
-    setThemeState((prev) => (prev === "dark" ? "light" : "dark"))
-
-  const setTheme = (t: Theme) => setThemeState(t)
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  const toggleTheme = useCallback(
+    () => setThemeState((prev) => (prev === "dark" ? "light" : "dark")),
+    [],
   )
-}
 
-export function useTheme() {
-  const ctx = useContext(ThemeContext)
-  if (!ctx) throw new Error("useTheme must be used within a ThemeProvider")
-  return ctx
-}
+  const setTheme = useCallback((t: Theme) => setThemeState(t), [])
 
+  const value = useMemo(
+    () => ({ theme, toggleTheme, setTheme }),
+    [theme, toggleTheme, setTheme],
+  )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+}

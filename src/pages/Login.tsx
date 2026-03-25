@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { motion } from "framer-motion"
 import { LogIn, UserPlus, Loader2, Zap } from "lucide-react"
 
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/context/useAuth"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 import { Button } from "@/components/ui/button"
@@ -52,30 +52,33 @@ export default function Login() {
       }
       navigate("/home", { replace: true })
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Authentication failed"
+      const message = err instanceof Error ? err.message : "Authentication failed"
       setError(message)
     }
   }
 
   return (
-    <div className="relative flex min-h-svh items-center justify-center bg-background px-4"
-         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    <div
+      className="bg-background relative flex min-h-svh items-center justify-center px-4"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {/* Theme toggle in top-right corner — safe area aware */}
-      <div className="absolute right-4 top-4" style={{ marginTop: "env(safe-area-inset-top)" }}>
+      <div
+        className="absolute top-4 right-4"
+        style={{ marginTop: "env(safe-area-inset-top)" }}
+      >
         <ThemeToggle />
       </div>
 
       {/* Animated background gradient blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/5 blur-3xl"
+          className="bg-primary/5 absolute -top-32 -left-32 h-96 w-96 rounded-full blur-3xl"
           animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-primary/5 blur-3xl"
+          className="bg-primary/5 absolute -right-32 -bottom-32 h-96 w-96 rounded-full blur-3xl"
           animate={{ x: [0, -60, 0], y: [0, -40, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -88,7 +91,7 @@ export default function Login() {
         className="w-full max-w-md"
       >
         <Card className="border-border/50 shadow-2xl backdrop-blur-sm sm:mx-auto">
-          <CardHeader className="space-y-3 text-center pb-4">
+          <CardHeader className="space-y-3 pb-4 text-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -98,9 +101,9 @@ export default function Login() {
                 damping: 20,
                 delay: 0.1,
               }}
-              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary"
+              className="bg-primary mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
             >
-              <Zap className="h-7 w-7 text-primary-foreground" />
+              <Zap className="text-primary-foreground h-7 w-7" />
             </motion.div>
             <CardTitle className="text-2xl font-bold tracking-tight">
               {isRegistering ? "Create Account" : "Welcome back"}
@@ -118,7 +121,7 @@ export default function Login() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                  className="border-destructive/50 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm"
                 >
                   {error}
                 </motion.div>
@@ -135,9 +138,7 @@ export default function Login() {
                   {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-xs text-destructive">
-                    {errors.email.message}
-                  </p>
+                  <p className="text-destructive text-xs">{errors.email.message}</p>
                 )}
               </div>
 
@@ -147,16 +148,12 @@ export default function Login() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
-                  autoComplete={
-                    isRegistering ? "new-password" : "current-password"
-                  }
+                  autoComplete={isRegistering ? "new-password" : "current-password"}
                   className="h-12 text-base"
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-xs text-destructive">
-                    {errors.password.message}
-                  </p>
+                  <p className="text-destructive text-xs">{errors.password.message}</p>
                 )}
               </div>
 
@@ -176,17 +173,15 @@ export default function Login() {
                 {isRegistering ? "Create Account" : "Sign In"}
               </Button>
 
-              <div className="pt-2 text-center text-sm text-muted-foreground">
-                {isRegistering
-                  ? "Already have an account?"
-                  : "Don't have an account?"}{" "}
+              <div className="text-muted-foreground pt-2 text-center text-sm">
+                {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
                 <button
                   type="button"
                   onClick={() => {
                     setIsRegistering(!isRegistering)
                     setError(null)
                   }}
-                  className="font-medium text-primary underline-offset-4 hover:underline py-2 px-1"
+                  className="text-primary px-1 py-2 font-medium underline-offset-4 hover:underline"
                 >
                   {isRegistering ? "Sign in" : "Sign up"}
                 </button>
@@ -198,4 +193,3 @@ export default function Login() {
     </div>
   )
 }
-

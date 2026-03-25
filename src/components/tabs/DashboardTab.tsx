@@ -1,148 +1,236 @@
+import { useState } from "react"
+import { useNavigate } from "react-router"
 import { motion } from "framer-motion"
-import { Activity, TrendingUp, Users, Zap } from "lucide-react"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Plus, Play, Pencil, Trash2, Layers, BookOpen, Loader2 } from "lucide-react"
 
-const stats = [
-  {
-    title: "Total Tasks",
-    value: "128",
-    change: "+12%",
-    icon: Activity,
-  },
-  {
-    title: "Completed",
-    value: "96",
-    change: "+8%",
-    icon: TrendingUp,
-  },
-  {
-    title: "Team Members",
-    value: "14",
-    change: "+2",
-    icon: Users,
-  },
-  {
-    title: "Productivity",
-    value: "94%",
-    change: "+5%",
-    icon: Zap,
-  },
-]
+import { useDecks, useCreateDeck, useUpdateDeck, useDeleteDeck } from "@/hooks/useDecks"
+import { DeckForm } from "@/components/DeckForm"
+import { ConfirmDialog } from "@/components/ConfirmDialog"
+import type { Deck } from "@/types/deck"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const containerVariants = {
   initial: {},
-  animate: {
-    transition: { staggerChildren: 0.08 },
-  },
+  animate: { transition: { staggerChildren: 0.06 } },
 }
 
-const cardVariants = {
-  initial: { opacity: 0, y: 20, scale: 0.95 },
+const itemVariants = {
+  initial: { opacity: 0, y: 16 },
   animate: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" as const },
+    transition: { duration: 0.35, ease: "easeOut" as const },
   },
 }
 
 export function DashboardTab() {
+  const navigate = useNavigate()
+  const { data: decks, isLoading } = useDecks()
+  const createDeck = useCreateDeck()
+  const updateDeck = useUpdateDeck()
+  const deleteDeck = useDeleteDeck()
+
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingDeck, setEditingDeck] = useState<Deck | null>(null)
+  const [deletingDeckId, setDeletingDeckId] = useState<string | null>(null)
+
+  const openCreate = () => {
+    setEditingDeck(null)
+    setFormOpen(true)
+  }
+
+  const openEdit = (deck: Deck) => {
+    setEditingDeck(deck)
+    setFormOpen(true)
+  }
+
+  const handleFormSubmit = async (data: {
+    name: string
+    description?: string
+    frontLabel: string
+    backLabel: string
+  }) => {
+    if (editingDeck) {
+      await updateDeck.mutateAsync({ deckId: editingDeck.id, data })
+    } else {
+      await createDeck.mutateAsync({
+        name: data.name,
+        description: data.description ?? "",
+        frontLabel: data.frontLabel,
+        backLabel: data.backLabel,
+      })
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deletingDeckId) return
+    await deleteDeck.mutateAsync(deletingDeckId)
+    setDeletingDeckId(null)
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Here's an overview of your workspace.
-        </p>
+      {/* Header with create button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">My Decks</h2>
+          <p className="text-muted-foreground text-sm">Tap a deck to start learning</p>
+        </div>
+        <Button className="h-10 gap-1.5" onClick={openCreate}>
+          <Plus className="h-4 w-4" />
+          <span>New Deck</span>
+        </Button>
       </div>
 
-      <motion.div
-        variants={containerVariants}
-        initial="initial"
-        animate="animate"
-        className="grid grid-cols-2 gap-3 lg:grid-cols-4"
-      >
-        {stats.map((stat) => (
-          <motion.div key={stat.title} variants={cardVariants}>
-            <Card className="transition-shadow hover:shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-primary font-medium">{stat.change}</span> from
-                  last month
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
+      {/* Deck list */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+        </div>
+      ) : !decks || decks.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="border-border flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed py-16"
+        >
+          <Layers className="text-muted-foreground h-12 w-12" />
+          <div className="text-center">
+            <p className="text-base font-medium">No decks yet</p>
+            <p className="text-muted-foreground text-sm">
+              Create your first deck to start learning
+            </p>
+          </div>
+          <Button onClick={openCreate} className="gap-1.5">
+            <Plus className="h-4 w-4" /> Create Deck
+          </Button>
+        </motion.div>
+      ) : (
+        <motion.div
+          variants={containerVariants}
+          initial="initial"
+          animate="animate"
+          className="space-y-3"
+        >
+          {decks.map((deck) => {
+            const total = deck.cardCount
+            const known = deck.progress?.knownCardIds?.length ?? 0
+            const pct = total > 0 ? Math.round((known / total) * 100) : 0
+            const lastPlayed = deck.progress?.lastPlayedAt
+              ? new Date(deck.progress.lastPlayedAt).toLocaleDateString()
+              : null
 
-      <motion.div variants={cardVariants} initial="initial" animate="animate">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest actions in Synapse.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  action: "Completed task",
-                  detail: "Design system review",
-                  time: "2 hours ago",
-                },
-                {
-                  action: "Added comment",
-                  detail: "API integration ticket",
-                  time: "4 hours ago",
-                },
-                {
-                  action: "Created project",
-                  detail: "Mobile app redesign",
-                  time: "Yesterday",
-                },
-                {
-                  action: "Invited member",
-                  detail: "alex@example.com",
-                  time: "2 days ago",
-                },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className="flex items-center justify-between rounded-lg border border-border/50 p-4 min-h-[56px] active:bg-muted/50 transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{item.action}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.detail}
-                    </p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {item.time}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+            return (
+              <motion.div key={deck.id} variants={itemVariants}>
+                <Card className="overflow-hidden transition-shadow active:shadow-lg">
+                  <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="truncate text-base">{deck.name}</CardTitle>
+                      {deck.description && (
+                        <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                          {deck.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground h-9 w-9"
+                        onClick={() => openEdit(deck)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive h-9 w-9"
+                        onClick={() => setDeletingDeckId(deck.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3">
+                    {/* Meta info */}
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="h-3 w-3" />
+                        {total} cards
+                      </span>
+                      <span>
+                        {deck.frontLabel} → {deck.backLabel}
+                      </span>
+                      {lastPlayed && <span>Played {lastPlayed}</span>}
+                    </div>
+
+                    {/* Progress bar */}
+                    {total > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="text-primary font-medium">{pct}%</span>
+                        </div>
+                        <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
+                          <motion.div
+                            className="bg-primary h-full rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{
+                              duration: 0.6,
+                              ease: "easeOut" as const,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        className="h-10 flex-1 gap-1.5"
+                        onClick={() => navigate(`/deck/${deck.id}/play`)}
+                        disabled={total === 0}
+                      >
+                        <Play className="h-4 w-4" />
+                        {deck.progress?.lastPlayedAt ? "Continue" : "Start"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 flex-1 gap-1.5"
+                        onClick={() => navigate(`/deck/${deck.id}/manage`)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Cards
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      )}
+
+      {/* Deck form bottom sheet */}
+      <DeckForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        deck={editingDeck}
+      />
+
+      {/* Delete confirmation */}
+      <ConfirmDialog
+        open={!!deletingDeckId}
+        title="Delete Deck?"
+        description="This will permanently delete this deck and all its cards. This action cannot be undone."
+        confirmLabel="Delete Deck"
+        onConfirm={handleDelete}
+        onCancel={() => setDeletingDeckId(null)}
+      />
     </div>
   )
 }
-
-
