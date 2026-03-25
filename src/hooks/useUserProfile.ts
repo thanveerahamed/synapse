@@ -10,6 +10,8 @@ export interface UserProfile {
   bio: string
   avatarUrl: string
   createdAt: string
+  isAdmin: boolean
+  adminTabEnabled: boolean
 }
 
 const defaultProfile: UserProfile = {
@@ -19,6 +21,8 @@ const defaultProfile: UserProfile = {
   bio: "Welcome to Synapse!",
   avatarUrl: "",
   createdAt: new Date().toISOString(),
+  isAdmin: false,
+  adminTabEnabled: false,
 }
 
 async function fetchUserProfile(uid: string): Promise<UserProfile> {

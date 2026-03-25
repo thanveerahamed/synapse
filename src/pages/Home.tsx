@@ -1,28 +1,40 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { LayoutDashboard, User, Settings, LogOut, BrainCircuit } from "lucide-react"
+import {
+  LayoutDashboard,
+  User,
+  Settings,
+  LogOut,
+  BrainCircuit,
+  ShieldEllipsis,
+} from "lucide-react"
 
 import { useAuth } from "@/context/useAuth"
+import { useUserProfile } from "@/hooks/useUserProfile"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { DashboardTab } from "@/components/tabs/DashboardTab"
 import { ProfileTab } from "@/components/tabs/ProfileTab"
 import { SettingsTab } from "@/components/tabs/SettingsTab"
+import { AdminTab } from "@/components/tabs/AdminTab"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
-const tabs = [
+const baseTabs = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "profile", label: "Profile", icon: User },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const
 
-type TabId = (typeof tabs)[number]["id"]
+const adminTab = { id: "admin" as const, label: "Admin", icon: ShieldEllipsis }
+
+type TabId = "dashboard" | "profile" | "settings" | "admin"
 
 const tabContent: Record<TabId, React.FC> = {
   dashboard: DashboardTab,
   profile: ProfileTab,
   settings: SettingsTab,
+  admin: AdminTab,
 }
 
 const pageVariants = {
@@ -39,7 +51,18 @@ const tabContentVariants = {
 
 export default function Home() {
   const { logout, user } = useAuth()
-  const [activeTab, setActiveTab] = useState<TabId>("dashboard")
+  const { data: profile } = useUserProfile()
+  const [selectedTab, setSelectedTab] = useState<TabId>("dashboard")
+
+  const isAdmin = profile?.isAdmin === true
+  const showAdminTab = isAdmin && profile?.adminTabEnabled === true
+  const tabs = showAdminTab ? [...baseTabs, adminTab] : [...baseTabs]
+
+  // If admin tab is selected but hidden, fall back to dashboard
+  const activeTab = useMemo<TabId>(
+    () => (selectedTab === "admin" && !showAdminTab ? "dashboard" : selectedTab),
+    [selectedTab, showAdminTab],
+  )
 
   const handleLogout = async () => {
     await logout()
@@ -113,7 +136,7 @@ export default function Home() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setSelectedTab(tab.id as TabId)}
                 className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors ${
                   isActive
                     ? "text-primary"

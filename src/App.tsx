@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router"
 import { AnimatePresence } from "framer-motion"
 
-import { ProtectedRoute, GuestRoute } from "@/components/RouteGuards"
+import { ProtectedRoute, GuestRoute, AdminRoute } from "@/components/RouteGuards"
 import Login from "@/pages/Login"
 import Home from "@/pages/Home"
 import PlayDeck from "@/pages/PlayDeck"
 import ManageCards from "@/pages/ManageCards"
+import UploadCSV from "@/pages/UploadCSV"
 
 export default function App() {
   return (
@@ -42,6 +43,14 @@ export default function App() {
               <ProtectedRoute>
                 <ManageCards />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/upload-csv"
+            element={
+              <AdminRoute>
+                <UploadCSV />
+              </AdminRoute>
             }
           />
         </Routes>

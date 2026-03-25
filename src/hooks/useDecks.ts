@@ -11,6 +11,7 @@ import {
   createCard,
   updateCard,
   deleteCard,
+  bulkCreateCards,
 } from "@/lib/firestore"
 import type { Deck, FlipCard, DeckProgress } from "@/types/deck"
 
@@ -133,6 +134,20 @@ export function useDeleteCard(deckId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cards", user?.uid, deckId] })
       qc.invalidateQueries({ queryKey: ["decks"] })
+    },
+  })
+}
+
+export function useBulkCreateCards(deckId: string) {
+  const { user } = useAuth()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (cards: Pick<FlipCard, "front" | "back">[]) =>
+      bulkCreateCards(user!.uid, deckId, cards),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cards", user?.uid, deckId] })
+      qc.invalidateQueries({ queryKey: ["decks"] })
+      qc.invalidateQueries({ queryKey: ["deck", user?.uid, deckId] })
     },
   })
 }

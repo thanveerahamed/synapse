@@ -137,3 +137,23 @@ export async function deleteCard(uid: string, deckId: string, cardId: string) {
     updatedAt: Date.now(),
   })
 }
+
+export async function bulkCreateCards(
+  uid: string,
+  deckId: string,
+  cards: Pick<FlipCard, "front" | "back">[],
+) {
+  const batch = writeBatch(db)
+  const now = Date.now()
+  for (const card of cards) {
+    const ref = doc(cardsCol(uid, deckId))
+    batch.set(ref, { ...card, createdAt: now })
+  }
+  await batch.commit()
+  // Update card count on the deck
+  const count = (await getDocs(cardsCol(uid, deckId))).size
+  await updateDoc(deckRef(uid, deckId), {
+    cardCount: count,
+    updatedAt: Date.now(),
+  })
+}

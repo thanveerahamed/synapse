@@ -3,9 +3,18 @@ import { useForm } from "react-hook-form"
 import { z } from "zod/v4"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { Monitor, Moon, Sun, Shield, Loader2, CheckCircle } from "lucide-react"
+import {
+  Monitor,
+  Moon,
+  Sun,
+  Shield,
+  Loader2,
+  CheckCircle,
+  FlaskConical,
+} from "lucide-react"
 import { useTheme } from "@/context/useTheme"
 import { useAuth } from "@/context/useAuth"
+import { useUserProfile, useUpdateUserProfile } from "@/hooks/useUserProfile"
 import {
   Card,
   CardContent,
@@ -33,6 +42,8 @@ type PasswordFormValues = z.infer<typeof passwordSchema>
 export function SettingsTab() {
   const { theme, setTheme } = useTheme()
   const { changePassword } = useAuth()
+  const { data: profile } = useUserProfile()
+  const updateProfile = useUpdateUserProfile()
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -150,6 +161,55 @@ export function SettingsTab() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Admin Tools toggle — only visible to admins */}
+      {profile?.isAdmin && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <FlaskConical className="text-muted-foreground h-5 w-5" />
+                <div>
+                  <CardTitle className="text-lg">Admin Tools</CardTitle>
+                  <CardDescription>
+                    Show or hide the Admin tab in the bottom navigation.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={profile.adminTabEnabled}
+                onClick={() =>
+                  updateProfile.mutate({
+                    adminTabEnabled: !profile.adminTabEnabled,
+                  })
+                }
+                className="flex w-full items-center justify-between rounded-lg py-1"
+              >
+                <span className="text-sm font-medium">Enable Admin Tab</span>
+                <div
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                    profile.adminTabEnabled ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`bg-background inline-block h-4 w-4 rounded-full shadow-sm transition-transform ${
+                      profile.adminTabEnabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </div>
+              </button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Change Password bottom sheet */}
       <AnimatePresence>
