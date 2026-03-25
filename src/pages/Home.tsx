@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { LayoutDashboard, User, Settings, LogOut, Zap } from "lucide-react"
+import { LayoutDashboard, User, Settings, LogOut, BrainCircuit } from "lucide-react"
 
 import { useAuth } from "@/context/useAuth"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -61,7 +61,7 @@ export default function Home() {
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center gap-2.5">
             <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
-              <Zap className="text-primary-foreground h-4 w-4" />
+              <BrainCircuit className="text-primary-foreground h-4 w-4" />
             </div>
             <span className="text-base font-bold tracking-tight">Synapse</span>
           </div>

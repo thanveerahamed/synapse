@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod/v4"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { motion } from "framer-motion"
-import { LogIn, UserPlus, Loader2, Zap } from "lucide-react"
+import { LogIn, UserPlus, Loader2, BrainCircuit } from "lucide-react"
 
 import { useAuth } from "@/context/useAuth"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -103,7 +103,7 @@ export default function Login() {
               }}
               className="bg-primary mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
             >
-              <Zap className="text-primary-foreground h-7 w-7" />
+              <BrainCircuit className="text-primary-foreground h-7 w-7" />
             </motion.div>
             <CardTitle className="text-2xl font-bold tracking-tight">
               {isRegistering ? "Create Account" : "Welcome back"}
