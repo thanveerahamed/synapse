@@ -15,9 +15,11 @@ export default defineConfig({
         name: "Synapse",
         short_name: "Synapse",
         description: "Synapse — Your intelligent workspace",
-        theme_color: "#09090b",
-        background_color: "#09090b",
+        theme_color: "#0b1a14",
+        background_color: "#0b1a14",
         display: "standalone",
+        orientation: "portrait",
+        categories: ["productivity"],
         scope: "/",
         start_url: "/",
         icons: [

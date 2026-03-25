@@ -1,10 +1,31 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-createRoot(document.getElementById('root')!).render(
+import { ThemeProvider } from "@/context/ThemeContext"
+import { AuthProvider } from "@/context/AuthContext"
+import { Toaster } from "@/components/ui/sonner"
+import App from "./App"
+import "./index.css"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <App />
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   </StrictMode>,
 )
